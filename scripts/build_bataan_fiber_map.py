@@ -943,11 +943,19 @@ def generate_html(data):
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     // Basemaps
-    const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    const esriStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19
     }).addTo(map);
 
-    const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19
+    });
+
+    const esriDark = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19
+    }).addTo(map);
+
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19
     });
 
@@ -960,9 +968,9 @@ def generate_html(data):
     });
 
     const baseMaps = {
-      "Carto Dark Matter (Telecom NOC)": cartoDark,
-      "Carto Voyager (Clean Street)": cartoVoyager,
-      "ESRI World Satellite": esriSat,
+      "ESRI World Street Map (Clear Bataan Roads)": esriStreet,
+      "ESRI High-Res Satellite": esriSat,
+      "ESRI Dark Gray (NOC Mode)": esriDark,
       "OpenStreetMap Standard": osm
     };
     L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
