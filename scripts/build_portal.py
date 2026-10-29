@@ -2,27 +2,27 @@
 import json
 
 def build_portal():
-    print("Building updated portal with clean non-watermarked basemaps & password protection...")
+    print("Building mobile-first, responsive index.html portal for GitHub Pages...")
 
     html = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Bataan Internet Infrastructure Portal | BatFIRST & National Backbone</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --bg-dark: #0a0f1d;
       --bg-surface: #111827;
-      --bg-card: rgba(17, 24, 39, 0.88);
+      --bg-card: rgba(17, 24, 39, 0.92);
       --bg-card-hover: rgba(31, 41, 55, 0.95);
       --border-color: rgba(255, 255, 255, 0.12);
       --border-accent: rgba(255, 120, 73, 0.35);
@@ -37,12 +37,15 @@ def build_portal():
       --accent-green: #10b981;
       --accent-purple: #8b5cf6;
       --accent-blue: #3b82f6;
+
+      --header-h: 64px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -62,14 +65,14 @@ def build_portal():
     #auth-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(10, 15, 29, 0.94);
+      background: rgba(10, 15, 29, 0.95);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
       z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
@@ -80,12 +83,12 @@ def build_portal():
     }
 
     .auth-card {
-      background: rgba(17, 24, 39, 0.96);
+      background: rgba(17, 24, 39, 0.97);
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 20px;
-      padding: 36px 32px;
+      padding: 32px 24px;
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 120, 73, 0.2);
       display: flex;
       flex-direction: column;
@@ -110,21 +113,21 @@ def build_portal():
     }
 
     .auth-icon-wrap {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
       background: linear-gradient(135deg, rgba(255, 120, 73, 0.2) 0%, rgba(244, 63, 94, 0.2) 100%);
       border: 1px solid rgba(255, 120, 73, 0.4);
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
-      margin-bottom: 20px;
+      font-size: 24px;
+      margin-bottom: 16px;
       box-shadow: 0 0 24px rgba(255, 120, 73, 0.25);
     }
 
     .auth-title {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 800;
       color: #fff;
       letter-spacing: -0.3px;
@@ -135,7 +138,7 @@ def build_portal():
       font-size: 12px;
       color: var(--text-muted);
       line-height: 1.5;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .auth-form {
@@ -169,10 +172,6 @@ def build_portal():
       background: rgba(10, 15, 29, 0.95);
     }
 
-    .auth-input::placeholder {
-      color: var(--text-dim);
-    }
-
     .toggle-pw-btn {
       position: absolute;
       right: 12px;
@@ -183,13 +182,7 @@ def build_portal():
       color: var(--text-dim);
       cursor: pointer;
       font-size: 14px;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-    }
-
-    .toggle-pw-btn:hover {
-      color: var(--text-muted);
+      padding: 6px;
     }
 
     .auth-remember {
@@ -201,12 +194,6 @@ def build_portal():
       cursor: pointer;
       user-select: none;
       text-align: left;
-      width: 100%;
-    }
-
-    .auth-remember input {
-      accent-color: var(--accent-orange);
-      cursor: pointer;
     }
 
     .auth-btn {
@@ -214,9 +201,9 @@ def build_portal():
       background: linear-gradient(135deg, #ff7849 0%, #ea580c 100%);
       border: none;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 13px 16px;
       color: #fff;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
@@ -224,13 +211,7 @@ def build_portal():
       justify-content: center;
       gap: 8px;
       box-shadow: 0 4px 16px rgba(234, 88, 12, 0.35);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .auth-btn:hover {
-      background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
-      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5);
-      transform: translateY(-1px);
+      transition: all 0.2s ease;
     }
 
     .auth-error {
@@ -245,16 +226,20 @@ def build_portal():
       display: block;
     }
 
-    /* Top Navigation Header */
+    /* =========================================
+       TOP NAVIGATION BAR
+       ========================================= */
     header {
-      background: rgba(10, 15, 29, 0.95);
+      background: rgba(10, 15, 29, 0.96);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-color);
-      padding: 0 24px;
-      height: 64px;
+      padding: 0 16px;
+      height: var(--header-h);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
       z-index: 1000;
       flex-shrink: 0;
     }
@@ -262,73 +247,89 @@ def build_portal():
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       text-decoration: none;
+      flex-shrink: 0;
     }
 
     .brand-logo {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       background: linear-gradient(135deg, #ff7849 0%, #f43f5e 100%);
-      border-radius: 10px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 20px;
+      font-size: 18px;
       color: white;
-      box-shadow: 0 0 20px rgba(255, 120, 73, 0.45);
+      box-shadow: 0 0 16px rgba(255, 120, 73, 0.45);
+      flex-shrink: 0;
     }
 
     .brand-title h1 {
-      font-size: clamp(14px, 1.1vw, 17px);
+      font-size: clamp(13px, 1.2vw, 16px);
       font-weight: 700;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.2px;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      white-space: nowrap;
     }
 
     .brand-badge {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.3);
       color: #34d399;
-      padding: 2px 7px;
+      padding: 1px 6px;
       border-radius: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .brand-title p {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
+      white-space: nowrap;
     }
 
     /* Navigation Tabs */
+    .nav-tabs-wrapper {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      display: flex;
+      align-items: center;
+    }
+    .nav-tabs-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
     .nav-tabs {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       background: rgba(17, 24, 39, 0.7);
-      padding: 4px;
+      padding: 3px;
       border-radius: 10px;
       border: 1px solid var(--border-color);
+      flex-shrink: 0;
     }
 
     .nav-tab {
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 7px 16px;
+      padding: 6px 12px;
       border-radius: 7px;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      white-space: nowrap;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -340,25 +341,26 @@ def build_portal():
     .nav-tab.active {
       color: #fff;
       background: var(--accent-orange);
-      box-shadow: 0 2px 10px rgba(255, 120, 73, 0.4);
+      box-shadow: 0 2px 8px rgba(255, 120, 73, 0.4);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .lock-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.05);
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border-color);
       color: var(--text-muted);
-      padding: 6px 11px;
+      padding: 6px 10px;
       border-radius: 8px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
@@ -373,24 +375,19 @@ def build_portal():
     .gh-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 7px 13px;
+      padding: 6px 11px;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       text-decoration: none;
       transition: all 0.2s;
     }
 
-    .gh-btn:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.25);
-    }
-
-    /* Main Content Area */
+    /* Main Viewports */
     main {
       flex: 1;
       position: relative;
@@ -425,7 +422,49 @@ def build_portal():
       background: #070b14;
     }
 
-    /* Floating Left Map Control Panel */
+    /* Floating Action Buttons on Mobile */
+    .mobile-fab-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 10px;
+      z-index: 1000;
+      width: auto;
+      max-width: 90%;
+    }
+
+    .fab-btn {
+      background: rgba(17, 24, 39, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 30px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .fab-btn:active {
+      transform: scale(0.96);
+    }
+
+    .fab-btn.active {
+      background: var(--accent-orange);
+      border-color: var(--accent-orange);
+      box-shadow: 0 4px 20px rgba(255, 120, 73, 0.5);
+    }
+
+    /* Floating Left Map Control Panel (Layers & Municipalities) */
     .map-panel {
       position: absolute;
       top: 16px;
@@ -434,6 +473,7 @@ def build_portal():
       max-height: calc(100% - 32px);
       background: rgba(10, 15, 29, 0.94);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-color);
       border-radius: 14px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.65);
@@ -441,14 +481,22 @@ def build_portal():
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+
+    .map-panel.collapsed {
+      transform: translateX(-400px);
+      pointer-events: none;
+      opacity: 0;
     }
 
     .panel-header {
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .panel-header h3 {
@@ -460,19 +508,39 @@ def build_portal():
       gap: 8px;
     }
 
+    .panel-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .panel-close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
     .panel-body {
-      padding: 14px 18px;
+      padding: 14px 16px;
       overflow-y: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 16px;
       content-visibility: auto;
-      contain-intrinsic-size: auto 380px auto 600px;
+      contain-intrinsic-size: auto 380px auto 550px;
     }
 
     .section-label {
-      font-size: 10.5px;
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       font-weight: 700;
@@ -480,12 +548,11 @@ def build_portal():
       margin-bottom: 8px;
     }
 
-    /* Basemap Selector Buttons */
+    /* Basemap Selector */
     .basemap-selector {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 6px;
-      margin-bottom: 6px;
     }
 
     .basemap-btn {
@@ -494,7 +561,7 @@ def build_portal():
       padding: 7px 4px;
       border-radius: 8px;
       color: #cbd5e1;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -510,7 +577,7 @@ def build_portal():
     }
 
     .basemap-btn.active {
-      background: rgba(255, 120, 73, 0.18);
+      background: rgba(255, 120, 73, 0.2);
       border-color: var(--accent-orange);
       color: #fff;
     }
@@ -519,18 +586,18 @@ def build_portal():
       font-size: 14px;
     }
 
-    /* Layer Toggles */
+    /* Layer List */
     .layer-list {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
 
     .layer-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-color);
-      padding: 9px 12px;
-      border-radius: 9px;
+      padding: 8px 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -545,7 +612,7 @@ def build_portal():
 
     .layer-card.active {
       background: rgba(255, 120, 73, 0.09);
-      border-color: rgba(255, 120, 73, 0.45);
+      border-color: rgba(255, 120, 73, 0.4);
     }
 
     .layer-left {
@@ -555,30 +622,31 @@ def build_portal():
     }
 
     .layer-indicator {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
     .layer-title h4 {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #f3f4f6;
     }
 
     .layer-title p {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--text-muted);
     }
 
     .custom-switch {
       position: relative;
-      width: 32px;
-      height: 18px;
+      width: 30px;
+      height: 16px;
       background: #374151;
       border-radius: 20px;
       transition: 0.2s;
+      flex-shrink: 0;
     }
 
     .custom-switch::after {
@@ -586,8 +654,8 @@ def build_portal():
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       background: #fff;
       border-radius: 50%;
       transition: 0.2s;
@@ -614,7 +682,7 @@ def build_portal():
       padding: 6px 4px;
       border-radius: 6px;
       color: #d1d5db;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
@@ -627,6 +695,32 @@ def build_portal():
       border-color: var(--accent-orange);
     }
 
+    /* Desktop Toggle Button for Left Panel */
+    .desktop-panel-trigger {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 999;
+      background: rgba(17, 24, 39, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .desktop-panel-trigger:hover {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: var(--accent-orange);
+    }
+
     /* Bottom Inspection Drawer */
     .inspector-card {
       position: absolute;
@@ -635,29 +729,37 @@ def build_portal():
       width: 440px;
       background: rgba(10, 15, 29, 0.95);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-color);
       border-radius: 14px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.7);
-      padding: 18px 20px;
+      padding: 16px 18px;
       z-index: 1000;
       max-height: calc(100% - 40px);
       overflow-y: auto;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+
+    .inspector-card.collapsed {
+      transform: translateY(120%);
+      pointer-events: none;
+      opacity: 0;
     }
 
     .inspector-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
     }
 
     .inspector-tag {
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
       letter-spacing: 0.5px;
     }
@@ -665,9 +767,9 @@ def build_portal():
     .meta-row {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
+      padding: 5px 0;
       border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 12px;
+      font-size: 11.5px;
     }
 
     .meta-row span:first-child {
@@ -680,40 +782,55 @@ def build_portal():
       font-family: 'JetBrains Mono', monospace;
     }
 
+    /* Modal Backdrop on Mobile for Drawers */
+    .mobile-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 998;
+      display: none;
+    }
+
+    .mobile-backdrop.active {
+      display: block;
+    }
+
     /* =========================================
-       TAB 2: EXECUTIVE BLUEPRINT & PPP MODEL
+       OTHER TABS: BLUEPRINT, ROW, ANCHORS, ETC.
        ========================================= */
     .scroll-container {
-      padding: 36px 48px;
-      max-width: 1300px;
+      padding: 32px 36px;
+      max-width: 1280px;
       margin: 0 auto;
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 28px;
     }
 
     .hero-banner {
       background: linear-gradient(135deg, rgba(255, 120, 73, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%);
       border: 1px solid var(--border-accent);
       border-radius: 16px;
-      padding: 32px;
+      padding: 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 32px;
+      gap: 24px;
     }
 
     .hero-content h2 {
-      font-size: clamp(20px, 2vw, 28px);
+      font-size: clamp(18px, 2vw, 26px);
       font-weight: 800;
       letter-spacing: -0.5px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       color: #fff;
     }
 
     .hero-content p {
-      font-size: 14px;
+      font-size: 13.5px;
       line-height: 1.6;
       color: #cbd5e1;
       max-width: 780px;
@@ -721,15 +838,15 @@ def build_portal():
 
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
     }
 
     .metric-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 18px 20px;
+      padding: 16px 18px;
       transition: transform 0.2s, border-color 0.2s;
     }
 
@@ -742,11 +859,11 @@ def build_portal():
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .metric-title {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -754,7 +871,7 @@ def build_portal():
     }
 
     .metric-num {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 800;
       font-family: 'JetBrains Mono', monospace;
     }
@@ -765,21 +882,20 @@ def build_portal():
       margin-top: 4px;
     }
 
-    /* Cards Grid */
     .card-grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
     }
 
     .content-box {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 14px;
-      padding: 24px;
+      padding: 22px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .box-header {
@@ -787,7 +903,7 @@ def build_portal():
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 14px;
+      padding-bottom: 12px;
     }
 
     .box-icon {
@@ -798,10 +914,11 @@ def build_portal():
       align-items: center;
       justify-content: center;
       font-size: 18px;
+      flex-shrink: 0;
     }
 
     .box-title h3 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: #fff;
     }
@@ -815,13 +932,13 @@ def build_portal():
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .feature-item {
       display: flex;
-      gap: 12px;
-      font-size: 13px;
+      gap: 10px;
+      font-size: 12.5px;
       line-height: 1.5;
       color: #cbd5e1;
     }
@@ -831,20 +948,20 @@ def build_portal():
       height: 6px;
       border-radius: 50%;
       background: var(--accent-orange);
-      margin-top: 7px;
+      margin-top: 6px;
       flex-shrink: 0;
     }
 
-    /* Tables */
+    /* Table Container */
     .data-table-container {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 14px;
-      overflow: hidden;
+      overflow-x: auto;
     }
 
     .table-header-bar {
-      padding: 16px 20px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
@@ -853,15 +970,16 @@ def build_portal():
 
     table {
       width: 100%;
+      min-width: 650px;
       border-collapse: collapse;
       text-align: left;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     th {
       background: rgba(255, 255, 255, 0.03);
-      padding: 12px 18px;
-      font-size: 11px;
+      padding: 11px 16px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -870,7 +988,7 @@ def build_portal():
     }
 
     td {
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       color: #e2e8f0;
     }
@@ -879,33 +997,21 @@ def build_portal():
       border-bottom: none;
     }
 
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    /* Download Action Buttons */
     .btn-download {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       background: var(--accent-orange);
       color: white;
-      padding: 9px 18px;
+      padding: 9px 16px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       text-decoration: none;
-      border: none;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .btn-download:hover {
-      background: #ea580c;
-      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
-    }
-
-    /* Custom Tooltip on Map */
     .custom-tooltip {
       background: rgba(10, 15, 29, 0.95) !important;
       border: 1px solid var(--border-color) !important;
@@ -914,33 +1020,121 @@ def build_portal():
       font-family: 'Plus Jakarta Sans', sans-serif !important;
       font-size: 11px !important;
       font-weight: 600 !important;
-      padding: 5px 10px !important;
+      padding: 4px 8px !important;
       box-shadow: 0 4px 14px rgba(0,0,0,0.6) !important;
     }
     .custom-tooltip::before {
       border-top-color: rgba(10, 15, 29, 0.95) !important;
     }
 
-    /* Responsive */
-    @media (max-width: 900px) {
+    /* =========================================
+       MOBILE RESPONSIVE OVERRIDES (max-width: 868px)
+       ========================================= */
+    @media (max-width: 868px) {
+      :root {
+        --header-h: 54px;
+      }
+
+      header {
+        padding: 0 12px;
+      }
+
+      .brand-title p {
+        display: none;
+      }
+
+      .gh-btn span {
+        display: none;
+      }
+      .gh-btn {
+        padding: 6px 8px;
+      }
+      .lock-btn span {
+        display: none;
+      }
+      .lock-btn {
+        padding: 6px 8px;
+      }
+
+      .nav-tab {
+        padding: 5px 9px;
+        font-size: 11px;
+      }
+      .nav-tab svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* On Mobile: Map Panel becomes a slide-up bottom sheet */
       .map-panel {
-        width: calc(100% - 32px);
-        max-height: 45%;
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-height: 75dvh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(110%);
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+        z-index: 1002;
       }
+
+      .map-panel.open-mobile {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Inspector Card becomes a slide-up bottom sheet on Mobile */
       .inspector-card {
-        width: calc(100% - 32px);
-        bottom: 16px;
-        right: 16px;
-        max-height: 40%;
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-height: 65dvh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(110%);
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+        z-index: 1001;
       }
+
+      .inspector-card.open-mobile {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Show Floating Action Buttons (FABs) on Mobile */
+      .mobile-fab-bar {
+        display: flex;
+      }
+
+      .scroll-container {
+        padding: 16px 14px;
+        gap: 20px;
+      }
+
+      .hero-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+      }
+
       .card-grid-2 {
         grid-template-columns: 1fr;
       }
-      .scroll-container {
-        padding: 20px 16px;
-      }
-      .nav-tab span {
-        display: none;
+
+      /* Reposition zoom buttons on mobile so they don't get covered */
+      .leaflet-top.leaflet-right {
+        top: 10px;
+        right: 10px;
       }
     }
   </style>
@@ -994,43 +1188,45 @@ def build_portal():
     <div class="brand">
       <div class="brand-logo">B</div>
       <div class="brand-title">
-        <h1>Bataan Internet Infrastructure Portal <span class="brand-badge">BatFIRST</span></h1>
+        <h1>Bataan Internet <span class="brand-badge">BatFIRST</span></h1>
         <p>RA 12234 DTIP Framework & Provincial Fiber Footprint</p>
       </div>
     </div>
 
     <!-- View Switcher Tabs -->
-    <nav class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('map-tab')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        <span>GIS Map Footprint</span>
-      </button>
-      <button class="nav-tab" onclick="switchTab('blueprint-tab')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span>PPP & DTIP Blueprint</span>
-      </button>
-      <button class="nav-tab" onclick="switchTab('row-tab')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        <span>Strategic ROW & Gaps</span>
-      </button>
-      <button class="nav-tab" onclick="switchTab('anchors-tab')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-        <span>Growth Anchors</span>
-      </button>
-      <button class="nav-tab" onclick="switchTab('downloads-tab')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Downloads</span>
-      </button>
-    </nav>
+    <div class="nav-tabs-wrapper">
+      <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('map-tab')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span>GIS Map</span>
+        </button>
+        <button class="nav-tab" onclick="switchTab('blueprint-tab')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Blueprint</span>
+        </button>
+        <button class="nav-tab" onclick="switchTab('row-tab')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>ROW & Gaps</span>
+        </button>
+        <button class="nav-tab" onclick="switchTab('anchors-tab')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span>Anchors</span>
+        </button>
+        <button class="nav-tab" onclick="switchTab('downloads-tab')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Downloads</span>
+        </button>
+      </nav>
+    </div>
 
     <div class="header-actions">
-      <button class="lock-btn" onclick="lockPortal()" title="Lock portal and require password again">
+      <button class="lock-btn" onclick="lockPortal()" title="Lock portal">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         <span>Lock</span>
       </button>
-      <a href="https://github.com/quizoli/Bataan-Internet" target="_blank" class="gh-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        <span>GitHub Repo</span>
+      <a href="https://github.com/quizoli/Bataan-Internet" target="_blank" class="gh-btn" title="GitHub Repository">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span>GitHub</span>
       </a>
     </div>
   </header>
@@ -1044,20 +1240,41 @@ def build_portal():
       <div id="map-view">
         <div id="map"></div>
 
-        <!-- Floating Left Layer Controls -->
-        <div class="map-panel">
+        <!-- Dimming Backdrop on Mobile when drawer is open -->
+        <div class="mobile-backdrop" id="mobile-backdrop" onclick="closeAllDrawers()"></div>
+
+        <!-- Desktop Trigger Button (shown when panel is collapsed) -->
+        <button class="desktop-panel-trigger" id="desktop-panel-btn" onclick="toggleMapPanel(true)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span>Map Layers & Styles</span>
+        </button>
+
+        <!-- Mobile Floating Action Bar (Pill Buttons) -->
+        <div class="mobile-fab-bar">
+          <button class="fab-btn" onclick="openMobileLayers()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span>Layers & Styles</span>
+          </button>
+          <button class="fab-btn" id="mobile-stats-btn" onclick="openMobileInspector()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <span>Overview</span>
+          </button>
+        </div>
+
+        <!-- Map Control Panel (Layers, Basemaps, Municipalities) -->
+        <div class="map-panel" id="map-panel-box">
           <div class="panel-header">
             <h3>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
               Bataan Map & Layers
             </h3>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono';">1,172 km</span>
+            <button class="panel-close-btn" onclick="toggleMapPanel(false)" title="Hide panel">✕</button>
           </div>
 
           <div class="panel-body">
             <!-- Basemap Switcher -->
             <div>
-              <div class="section-label">Map Style (Clean / No Watermark)</div>
+              <div class="section-label">Basemap Style</div>
               <div class="basemap-selector">
                 <button class="basemap-btn active" id="btn-bm-street" onclick="selectBasemap('street')">
                   <span>🗺️</span>
@@ -1080,7 +1297,7 @@ def build_portal():
 
             <!-- Infrastructure Layers -->
             <div>
-              <div class="section-label">Infrastructure Footprint</div>
+              <div class="section-label">Infrastructure Footprint (1,172 km)</div>
               <div class="layer-list">
                 <div class="layer-card active" id="toggle-ug" onclick="toggleLayer('underground')">
                   <div class="layer-left">
@@ -1160,17 +1377,17 @@ def build_portal():
           </div>
         </div>
 
-        <!-- Floating Right Inspector Card -->
+        <!-- Detail Drawer / Inspector Card -->
         <div class="inspector-card" id="detail-drawer">
           <div class="inspector-header">
             <div>
               <span class="inspector-tag" id="drawer-tag" style="background: rgba(255, 120, 73, 0.2); color: var(--accent-orange);">Strategic Overview</span>
-              <h3 id="drawer-title" style="font-size: 15px; font-weight: 700; color: #fff; margin-top: 4px;">Bataan Provincial Backbone Infrastructure</h3>
+              <h3 id="drawer-title" style="font-size: 14px; font-weight: 700; color: #fff; margin-top: 3px;">Bataan Provincial Backbone Infrastructure</h3>
             </div>
-            <button onclick="resetDrawer()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+            <button class="panel-close-btn" onclick="toggleInspector(false)" title="Close details">✕</button>
           </div>
-          <div id="drawer-body" style="font-size: 12px; line-height: 1.55; color: #cbd5e1;">
-            <p style="margin-bottom: 10px;">
+          <div id="drawer-body" style="font-size: 11.5px; line-height: 1.55; color: #cbd5e1;">
+            <p style="margin-bottom: 8px;">
               Click on any fiber route, node marker, or economic anchor on the map to inspect its technical specifications, physical alignment, and connectivity mandate.
             </p>
             <div class="meta-row">
@@ -1207,10 +1424,10 @@ def build_portal():
               Operationalizing RA 12234 (Konektadong Pinoy Act) for faster, cheaper, stable, and highly reliable connectivity across the Province of Bataan through a public passive infrastructure concession.
             </p>
           </div>
-          <div style="background: rgba(17, 24, 39, 0.8); border: 1px solid var(--border-color); padding: 18px 24px; border-radius: 12px; text-align: right; flex-shrink: 0;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Base Off-Take Target</div>
-            <div style="font-size: 32px; font-weight: 800; color: var(--accent-green); font-family: 'JetBrains Mono';">65%</div>
-            <div style="font-size: 11px; color: var(--text-dim);">Anchored by e-Gov, FAB, HEIP</div>
+          <div style="background: rgba(17, 24, 39, 0.8); border: 1px solid var(--border-color); padding: 14px 20px; border-radius: 12px; text-align: right; flex-shrink: 0;">
+            <div style="font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Base Off-Take Target</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--accent-green); font-family: 'JetBrains Mono';">65%</div>
+            <div style="font-size: 10.5px; color: var(--text-dim);">Anchored by e-Gov, FAB, HEIP</div>
           </div>
         </div>
 
@@ -1313,17 +1530,17 @@ def build_portal():
               <p>Insulating Critical Telecom Nodes from Utility Surges & Typhoons</p>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
             <div>
-              <h4 style="color: #fff; margin-bottom: 6px;">☀️ Direct 48V DC Solar-Battery Bus</h4>
+              <h4 style="color: #fff; margin-bottom: 5px;">☀️ Direct 48V DC Solar-Battery Bus</h4>
               <p>Direct 48V DC bus connection completely isolates telecom node electronics from alternating-current grid voltage surges, eliminating failure-prone inverters and ensuring 100% uptime during provincial blackouts.</p>
             </div>
             <div>
-              <h4 style="color: #fff; margin-bottom: 6px;">🚇 4-Way 14/10mm Microduct Bundle</h4>
+              <h4 style="color: #fff; margin-bottom: 5px;">🚇 4-Way 14/10mm Microduct Bundle</h4>
               <p>Encased in sand bedding and lean concrete at 0.8m–1.2m depth with magnetic warning tape. Sidewalk micro-trenching utilizes 2-way 12/9mm microducts cut along curb lines for rapid, low-impact deployment.</p>
             </div>
             <div>
-              <h4 style="color: #fff; margin-bottom: 6px;">📦 Pre-Cast Polymer Handholes</h4>
+              <h4 style="color: #fff; margin-bottom: 5px;">📦 Pre-Cast Polymer Handholes</h4>
               <p>Positioned every 300m–500m along utility corridors for rapid mid-span fiber blowing and tenant interconnects without pavement breaking.</p>
             </div>
           </div>
@@ -1356,14 +1573,14 @@ def build_portal():
               <p style="color: #fca5a5;">Current Status: Open-Ended Spur Vulnerability</p>
             </div>
           </div>
-          <div style="font-size: 13.5px; line-height: 1.6; color: #f1f5f9;">
-            <p style="margin-bottom: 12px;">
+          <div style="font-size: 13px; line-height: 1.6; color: #f1f5f9;">
+            <p style="margin-bottom: 10px;">
               The November 2024 regional backbone dataset explicitly tags <strong>BAGAC (2) - LOWER (30.13 km)</strong> and <strong>MARIVELES (13.15 km)</strong> under <code style="background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:4px; color:#f43f5e;">ROUTE > NOT IMPLEMENTED</code>. 
             </p>
-            <p style="margin-bottom: 12px;">
+            <p style="margin-bottom: 10px;">
               Because this link is missing, fiber lines going into Morong and Bagac terminate as an unredundant spur. If a fallen tree or backhoe damages the trans-peninsular aerial span crossing Mount Samat (Pilar to Bagac), the entire western municipality cluster is completely severed.
             </p>
-            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px 18px; border-radius: 8px; color: #a7f3d0;">
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px 16px; border-radius: 8px; color: #a7f3d0;">
               <strong>BatFIRST Resiliency Mandate:</strong> Construct a <strong>36.8 km coastal underground microduct conduit</strong> along Gov. Joaquin J. Linao Road from Bagac Town Proper to the Mariveles Freeport Zone. This transforms the network into a 360° closed-loop, self-healing municipal ring that reroutes traffic in sub-seconds.
             </div>
           </div>
@@ -1379,7 +1596,7 @@ def build_portal():
                 <p>Roman Superhighway, Hermosa-Morong Economic Access Road</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               The <strong>₱4.27 Billion Hermosa-Morong Economic Access Road (19 km)</strong> is currently under active construction. Implementing mandatory Dig-Once multi-ducts directly into this road project provides a low-cost, shallow-trench cross-peninsular conduit connecting Hermosa and Subic to Morong before pavement is completed.
             </p>
           </div>
@@ -1392,7 +1609,7 @@ def build_portal():
                 <p>DPWH and Provincial Concrete River Dikes</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               Historic town centers in Bataan (Orani, Samal, Abucay, Balanga) are centered around river mouths. Anchoring galvanized steel or UPVC conduit brackets directly to concrete retaining wall copings above historical high-water marks eliminates the need to break downtown paved roads.
             </p>
           </div>
@@ -1405,7 +1622,7 @@ def build_portal():
                 <p>National Irrigation Administration Service Roads</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               Unpaved canal service roads and dikes form soft-dig, obstacle-free linear paths that connect agricultural interior barangays directly to municipal POP aggregation nodes without encountering highway right-of-way fees.
             </p>
           </div>
@@ -1418,7 +1635,7 @@ def build_portal():
                 <p>NGCP & TRANSCO Ground Rights-of-Way</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               Transmission corridors route power from Bataan's massive energy plants directly north through Central Luzon, offering continuous linear paths insulated from municipal traffic interference and road-widening disruptions.
             </p>
           </div>
@@ -1444,8 +1661,8 @@ def build_portal():
 
         <div class="data-table-container">
           <div class="table-header-bar">
-            <h3 style="font-size: 14px; font-weight: 700; color: #fff;">Major Industrial & Commercial Off-Take Anchors</h3>
-            <span style="font-size: 11px; color: var(--text-muted);">Source: Lipad v5 & Provincial Economic Code</span>
+            <h3 style="font-size: 13.5px; font-weight: 700; color: #fff;">Major Industrial & Commercial Off-Take Anchors</h3>
+            <span style="font-size: 11px; color: var(--text-muted);">Source: Lipad v5</span>
           </div>
           <table>
             <thead>
@@ -1538,10 +1755,10 @@ def build_portal():
                 <p>Full 385 LineStrings & 32 Points of Presence</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               Complete structured dataset containing underground conduits, aerial backbones, implemented handhole spans, nodes, and growth engines with calculated lengths in kilometers.
             </p>
-            <div style="margin-top: auto; padding-top: 12px;">
+            <div style="margin-top: auto; padding-top: 10px;">
               <a href="bataan_fiber_data.js" download="bataan_fiber_data.js" class="btn-download">
                 Download JS / JSON Dataset (1.1 MB)
               </a>
@@ -1556,10 +1773,10 @@ def build_portal():
                 <p>PDF Summary of Stakeholder Master Plan Proceedings</p>
               </div>
             </div>
-            <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+            <p style="font-size: 12.5px; line-height: 1.6; color: #cbd5e1;">
               Executive summary detailing the PPP tollway model, DPWH co-location savings, dark fiber provisioning, and One Bataan digital infrastructure roadmap.
             </p>
-            <div style="margin-top: auto; padding-top: 12px;">
+            <div style="margin-top: auto; padding-top: 10px;">
               <a href="batFIRST.pdf" download="batFIRST.pdf" class="btn-download" style="background: #10b981;">
                 Download batFIRST PDF (1.5 MB)
               </a>
@@ -1579,7 +1796,6 @@ def build_portal():
     // ==========================================
     // PASSWORD PROTECTION & CRYPTO AUTH
     // ==========================================
-    // SHA-256 hash of "onebataan"
     const AUTH_HASH = "60d3fc17aba7ef2bfa3a781ec0a0fbb17b9d80c5325ef53c7bafc5833ccca8e1";
     const AUTH_STORAGE_KEY = "bataan_portal_auth_token";
 
@@ -1647,8 +1863,62 @@ def build_portal():
       input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // Run auth check immediately
     checkExistingAuth();
+
+    // ==========================================
+    // MOBILE & DESKTOP DRAWER CONTROLS
+    // ==========================================
+    const isMobile = () => window.innerWidth <= 868;
+
+    function openMobileLayers() {
+      document.getElementById('mobile-backdrop').classList.add('active');
+      document.getElementById('map-panel-box').classList.add('open-mobile');
+      document.getElementById('detail-drawer').classList.remove('open-mobile');
+    }
+
+    function openMobileInspector() {
+      document.getElementById('mobile-backdrop').classList.add('active');
+      document.getElementById('detail-drawer').classList.add('open-mobile');
+      document.getElementById('map-panel-box').classList.remove('open-mobile');
+    }
+
+    function closeAllDrawers() {
+      document.getElementById('mobile-backdrop').classList.remove('active');
+      document.getElementById('map-panel-box').classList.remove('open-mobile');
+      document.getElementById('detail-drawer').classList.remove('open-mobile');
+    }
+
+    function toggleMapPanel(show) {
+      const panel = document.getElementById('map-panel-box');
+      const triggerBtn = document.getElementById('desktop-panel-btn');
+
+      if (isMobile()) {
+        if (show) openMobileLayers();
+        else closeAllDrawers();
+      } else {
+        if (show) {
+          panel.classList.remove('collapsed');
+          triggerBtn.style.display = 'none';
+        } else {
+          panel.classList.add('collapsed');
+          triggerBtn.style.display = 'flex';
+        }
+      }
+    }
+
+    function toggleInspector(show) {
+      const drawer = document.getElementById('detail-drawer');
+      if (isMobile()) {
+        if (show) openMobileInspector();
+        else closeAllDrawers();
+      } else {
+        if (show) {
+          drawer.classList.remove('collapsed');
+        } else {
+          drawer.classList.add('collapsed');
+        }
+      }
+    }
 
     // ==========================================
     // TAB SWITCHING
@@ -1667,11 +1937,11 @@ def build_portal():
     }
 
     // ==========================================
-    // MAP INITIALIZATION (CLEAN, NO WATERMARK BASEMAPS)
+    // MAP INITIALIZATION
     // ==========================================
     const map = L.map('map', {
       center: [14.65, 120.45],
-      zoom: 11,
+      zoom: isMobile() ? 10 : 11,
       zoomControl: false,
       attributionControl: false
     });
@@ -1706,7 +1976,7 @@ def build_portal():
       attribution: '© OpenStreetMap contributors'
     });
 
-    // Default to ESRI World Street Map so Bataan's towns, roads, and landscape are crystal clear!
+    // Default basemap
     esriStreet.addTo(map);
 
     const basemapLayers = {
@@ -1721,12 +1991,10 @@ def build_portal():
       const activeBtn = document.getElementById('btn-bm-' + (key === 'satellite' ? 'sat' : key));
       if (activeBtn) activeBtn.classList.add('active');
 
-      // Remove existing basemaps
       Object.values(basemapLayers).forEach(layer => {
         if (map.hasLayer(layer)) map.removeLayer(layer);
       });
 
-      // Add selected
       if (basemapLayers[key]) {
         basemapLayers[key].addTo(map);
       }
@@ -1761,7 +2029,12 @@ def build_portal():
         sticky: true
       });
 
-      poly.on('click', () => showLineDetails(line));
+      poly.on('click', () => {
+        showLineDetails(line);
+        if (isMobile()) openMobileInspector();
+        else toggleInspector(true);
+      });
+
       targetGroup.addLayer(poly);
     });
 
@@ -1778,7 +2051,11 @@ def build_portal():
       className: 'custom-tooltip',
       sticky: true
     });
-    proposedPoly.on('click', () => showProposedDetails(proposed));
+    proposedPoly.on('click', () => {
+      showProposedDetails(proposed);
+      if (isMobile()) openMobileInspector();
+      else toggleInspector(true);
+    });
     layers.proposed.addLayer(proposedPoly);
 
     // Node & Anchor Icons
@@ -1821,7 +2098,11 @@ def build_portal():
       
       const marker = L.marker([lat, lon], { icon: createNodeIcon(pt.type, nodeCol) });
       marker.bindTooltip(`<b>${pt.name}</b><br>${pt.type} (${pt.jurisdiction})`, { className: 'custom-tooltip' });
-      marker.on('click', () => showNodeDetails(pt));
+      marker.on('click', () => {
+        showNodeDetails(pt);
+        if (isMobile()) openMobileInspector();
+        else toggleInspector(true);
+      });
       layers.nodes.addLayer(marker);
     });
 
@@ -1829,7 +2110,11 @@ def build_portal():
     BATAAN_FIBER_DATA.anchors.forEach(anc => {
       const marker = L.marker([anc.lat, anc.lon], { icon: createAnchorIcon(anc.category) });
       marker.bindTooltip(`<b>${anc.name}</b><br>${anc.category} (${anc.town})`, { className: 'custom-tooltip' });
-      marker.on('click', () => showAnchorDetails(anc));
+      marker.on('click', () => {
+        showAnchorDetails(anc);
+        if (isMobile()) openMobileInspector();
+        else toggleInspector(true);
+      });
       layers.anchors.addLayer(marker);
     });
 
@@ -1842,6 +2127,9 @@ def build_portal():
       btn.onclick = () => {
         map.flyTo([muni.lat, muni.lon], 13.5, { duration: 1.2 });
         showMuniDetails(muni);
+        if (isMobile()) {
+          closeAllDrawers();
+        }
       };
       muniGrid.appendChild(btn);
     });
@@ -1892,9 +2180,9 @@ def build_portal():
         </div>
         <div class="meta-row">
           <span>Source Folder:</span>
-          <span style="font-size: 10px; max-width: 230px; text-align: right; overflow:hidden; text-overflow:ellipsis;">${line.folder.split(' > ').slice(-2).join(' > ')}</span>
+          <span style="font-size: 10px; max-width: 200px; text-align: right; overflow:hidden; text-overflow:ellipsis;">${line.folder.split(' > ').slice(-2).join(' > ')}</span>
         </div>
-        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
+        <div style="margin-top: 10px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
           <strong>BatFIRST Concession Note:</strong> Civil works co-located with road alignments (DPWH/LGU) reduce trenching costs by over 70%. Open-access microduct reservation guarantees shared tenancy for PLDT, Globe, DITO, and local micro-ISPs.
         </div>
       `;
@@ -1907,7 +2195,7 @@ def build_portal():
       document.getElementById('drawer-title').innerText = prop.name;
 
       document.getElementById('drawer-body').innerHTML = `
-        <p style="margin-bottom: 10px; color: #fecdd3;">${prop.description}</p>
+        <p style="margin-bottom: 8px; color: #fecdd3;">${prop.description}</p>
         <div class="meta-row">
           <span>Alignment:</span>
           <span>Gov. Joaquin Linao Road</span>
@@ -1924,7 +2212,7 @@ def build_portal():
           <span>Sub-second Failover:</span>
           <span>Automatic Rerouting via West Coast</span>
         </div>
-        <div style="margin-top: 12px; font-size: 11px; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 8px 10px; border-radius: 6px;">
+        <div style="margin-top: 10px; font-size: 11px; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 8px 10px; border-radius: 6px;">
           <strong>Strategic Recommendation:</strong> Prioritize this segment under the DPWH/One Bataan Dig-Once road modernization to achieve closed-loop underground ring redundancy before typhoon season.
         </div>
       `;
@@ -1953,7 +2241,7 @@ def build_portal():
           <span>Power Resilience:</span>
           <span>Direct 48V DC Solar-Battery Bus (Target)</span>
         </div>
-        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
+        <div style="margin-top: 10px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
           <strong>Node Functions:</strong> Acts as an open-access Carrier Neutral Aggregation Hub (CNAH) where local micro-ISPs connect into the high-speed middle-mile transport grid via FRAND wheeling tariffs.
         </div>
       `;
@@ -1966,7 +2254,7 @@ def build_portal():
       document.getElementById('drawer-title').innerText = anc.name;
 
       document.getElementById('drawer-body').innerHTML = `
-        <p style="margin-bottom: 10px; color: #e2e8f0;">${anc.description}</p>
+        <p style="margin-bottom: 8px; color: #e2e8f0;">${anc.description}</p>
         <div class="meta-row">
           <span>Municipality:</span>
           <span>${anc.town}</span>
@@ -1979,7 +2267,7 @@ def build_portal():
           <span>Economic Sector:</span>
           <span>${anc.category}</span>
         </div>
-        <div style="margin-top: 12px; font-size: 11px; color: #bae6fd; background: rgba(56, 189, 248, 0.15); padding: 8px 10px; border-radius: 6px;">
+        <div style="margin-top: 10px; font-size: 11px; color: #bae6fd; background: rgba(56, 189, 248, 0.15); padding: 8px 10px; border-radius: 6px;">
           <strong>Off-Take Anchor:</strong> High industrial concentration de-risks private concessionaire capital by guaranteeing 5-10 year dark fiber IRU and capacity leasing revenue.
         </div>
       `;
@@ -1994,7 +2282,7 @@ def build_portal():
       document.getElementById('drawer-body').innerHTML = `
         <div class="meta-row">
           <span>Strategic Focus:</span>
-          <span style="font-size: 11px; max-width: 240px; text-align: right;">${muni.role}</span>
+          <span style="font-size: 11px; max-width: 220px; text-align: right;">${muni.role}</span>
         </div>
         <div class="meta-row">
           <span>Coordinates:</span>
@@ -2010,33 +2298,12 @@ def build_portal():
       `;
     }
 
-    function resetDrawer() {
-      document.getElementById('drawer-tag').innerText = "Strategic Overview";
-      document.getElementById('drawer-tag').style.background = "rgba(255, 120, 73, 0.2)";
-      document.getElementById('drawer-tag').style.color = "var(--accent-orange)";
-      document.getElementById('drawer-title').innerText = "Bataan Provincial Backbone Infrastructure";
-      document.getElementById('drawer-body').innerHTML = `
-        <p style="margin-bottom: 10px;">
-          Click on any fiber route, node marker, or economic anchor on the map to inspect its technical specifications, physical alignment, and connectivity mandate.
-        </p>
-        <div class="meta-row">
-          <span>Primary North-South Trunk:</span>
-          <span>Roman Superhighway (Dual UG)</span>
-        </div>
-        <div class="meta-row">
-          <span>East-West Penetration:</span>
-          <span>JASA / Olongapo-Gapan Road</span>
-        </div>
-        <div class="meta-row">
-          <span>Trans-Peninsular Span:</span>
-          <span>Pilar - Bagac Aerial Link</span>
-        </div>
-        <div class="meta-row">
-          <span>Topology Vulnerability:</span>
-          <span style="color: var(--accent-crimson);">Bagac - Mariveles Spur Gap</span>
-        </div>
-      `;
-    }
+    // Dismiss drawer when clicking outside on desktop
+    map.on('click', () => {
+      if (isMobile()) {
+        closeAllDrawers();
+      }
+    });
   </script>
 </body>
 </html>
@@ -2044,7 +2311,7 @@ def build_portal():
 
     with open("index.html", "w") as f:
         f.write(html)
-    print("Saved index.html successfully!")
+    print("Saved mobile-friendly index.html successfully!")
 
 if __name__ == "__main__":
     build_portal()
