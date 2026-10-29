@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bataan Provincial Fiber Footprint & BatFIRST Infrastructure Map</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-panel: rgba(15, 23, 42, 0.92);
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --border-color: rgba(148, 163, 184, 0.18);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-orange: #ff7849;
+      --accent-cyan: #06b6d4;
+      --accent-yellow: #fbbf24;
+      --accent-crimson: #f43f5e;
+      --accent-green: #10b981;
+      --accent-purple: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #ff7849 0%, #f43f5e 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 0 16px rgba(255, 120, 73, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+
+    .brand-title p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .stat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .stat-label {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-val {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Main Container */
+    #container {
+      flex: 1;
+      position: relative;
+      display: flex;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      background: #0b1120;
+    }
+
+    /* Floating Left Control Panel */
+    .floating-panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: 380px;
+      max-height: calc(100% - 32px);
+      background: var(--bg-panel);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .panel-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-content {
+      padding: 14px 18px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    /* Layer Toggle Buttons */
+    .layer-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .layer-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 9px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .layer-toggle:hover {
+      background: rgba(51, 65, 85, 0.8);
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    .layer-toggle.active {
+      border-color: rgba(255, 120, 73, 0.5);
+      background: rgba(255, 120, 73, 0.1);
+    }
+
+    .toggle-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .toggle-info h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .toggle-info p {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      background: #334155;
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .layer-toggle.active .toggle-switch {
+      background: var(--accent-orange);
+    }
+
+    .layer-toggle.active .toggle-switch::after {
+      transform: translateX(14px);
+    }
+
+    /* Municipality Selector */
+    .muni-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .muni-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 4px;
+      border-radius: 6px;
+      color: #cbd5e1;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .muni-btn:hover {
+      background: var(--accent-orange);
+      color: white;
+      border-color: var(--accent-orange);
+    }
+
+    /* Bottom Info Card (Drawer) */
+    .info-card {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 440px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      padding: 18px 20px;
+      z-index: 1000;
+      max-height: calc(100% - 40px);
+      overflow-y: auto;
+      transition: all 0.3s ease;
+    }
+
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .info-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 120, 73, 0.2);
+      color: var(--accent-orange);
+      letter-spacing: 0.5px;
+    }
+
+    .info-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .info-body {
+      font-size: 12px;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .info-row span:first-child {
+      color: var(--text-muted);
+    }
+
+    .info-row span:last-child {
+      font-weight: 600;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom Leaflet Tooltip */
+    .custom-tooltip {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 6px !important;
+      color: #fff !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      padding: 5px 10px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+    }
+    .custom-tooltip::before {
+      border-top-color: rgba(15, 23, 42, 0.95) !important;
+    }
+
+    /* Floating BatFIRST Policy Pill */
+    .policy-badge {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #a7f3d0;
+    }
+    .policy-badge strong {
+      color: #34d399;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">B</div>
+      <div class="brand-title">
+        <h1>Bataan Provincial Fiber Footprint & BatFIRST GIS Overlay</h1>
+        <p>RA 12234 (DTIP) Open-Access Concession & National Backbone Integration</p>
+      </div>
+    </div>
+
+    <div class="quick-stats">
+      <div class="stat-pill">
+        <span class="stat-label">Total Tracked Fiber</span>
+        <span class="stat-val" style="color: #38bdf8;">1171.96 km</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">Underground Trunk</span>
+        <span class="stat-val" style="color: var(--accent-orange);">334.85 km</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">Aerial Backbone</span>
+        <span class="stat-val" style="color: var(--accent-cyan);">773.68 km</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">Civil Handholes</span>
+        <span class="stat-val" style="color: var(--accent-yellow);">20.15 km</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">Core Nodes / POPs</span>
+        <span class="stat-val" style="color: var(--accent-purple);">32 Sites</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Map Workspace -->
+  <div id="container">
+    <div id="map"></div>
+
+    <!-- Floating Filter & Control Panel -->
+    <div class="floating-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Fiber Footprint Layers
+        </div>
+        <span style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono';">v2024.11</span>
+      </div>
+
+      <div class="panel-content">
+        <!-- Infrastructure Layers -->
+        <div>
+          <div class="section-title">Network Layers</div>
+          <div class="layer-group">
+            <div class="layer-toggle active" id="toggle-ug" onclick="toggleLayer('underground')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-orange); box-shadow: 0 0 8px var(--accent-orange);"></div>
+                <div class="toggle-info">
+                  <h4>Underground Backbone Conduits</h4>
+                  <p>Roman Hwy, Orion-Mariveles, San Fernando</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+
+            <div class="layer-toggle active" id="toggle-aerial" onclick="toggleLayer('aerial')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan);"></div>
+                <div class="toggle-info">
+                  <h4>Aerial Backbone FOC</h4>
+                  <p>Bagac-Pilar, Subic-Morong, Regional Trunks</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+
+            <div class="layer-toggle active" id="toggle-hh" onclick="toggleLayer('handholes')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-yellow); box-shadow: 0 0 8px var(--accent-yellow);"></div>
+                <div class="toggle-info">
+                  <h4>Handhole-to-Handhole Civil Runs</h4>
+                  <p>Detailed ~300-500m Balanga, Hermosa, Abucay</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+
+            <div class="layer-toggle active" id="toggle-proposed" onclick="toggleLayer('proposed')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-crimson); box-shadow: 0 0 8px var(--accent-crimson);"></div>
+                <div class="toggle-info">
+                  <h4>BatFIRST Ring Closure (Gap Solution)</h4>
+                  <p>Bagac - Mariveles 36.8km Coastal Conduit</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+
+            <div class="layer-toggle active" id="toggle-nodes" onclick="toggleLayer('nodes')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple);"></div>
+                <div class="toggle-info">
+                  <h4>Telecom POPs & Node Shelters</h4>
+                  <p>Type 2/3/4A shelters, PM pole mounts, Base Points</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+
+            <div class="layer-toggle active" id="toggle-anchors" onclick="toggleLayer('anchors')">
+              <div class="toggle-left">
+                <div class="color-dot" style="background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green);"></div>
+                <div class="toggle-info">
+                  <h4>Growth Engines & Demand Anchors</h4>
+                  <p>FAB, HEIP, Petron, GNPower, Command Center</p>
+                </div>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strategic Context -->
+        <div class="policy-badge">
+          <strong>RA 12234 (Konektadong Pinoy Act)</strong>
+          Middle-mile passive infrastructure (trenching, conduits, handholes) funded by government CapEx under statutory "Dig-Once" doctrine. Open access leased to retail ISPs via FRAND tariffs.
+        </div>
+
+        <!-- Municipalities Quick Zoom -->
+        <div>
+          <div class="section-title">Jump to Municipality (11 LGUs + 1 City)</div>
+          <div class="muni-grid" id="muni-buttons">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Detail Drawer -->
+    <div class="info-card" id="detail-card">
+      <div class="info-header">
+        <div>
+          <span class="info-tag" id="card-tag">Strategic Overview</span>
+          <h3 class="info-title" id="card-title">Bataan Provincial Backbone Infrastructure</h3>
+        </div>
+        <button onclick="resetCard()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+      </div>
+      <div class="info-body" id="card-body">
+        <p style="margin-bottom: 10px;">
+          Click on any fiber route, node marker, or economic anchor on the map to inspect its technical specifications, physical alignment, and connectivity mandate.
+        </p>
+        <div class="info-row">
+          <span>Primary North-South Trunk:</span>
+          <span>Roman Superhighway (Dual UG)</span>
+        </div>
+        <div class="info-row">
+          <span>East-West Penetration:</span>
+          <span>JASA / Olongapo-Gapan Road</span>
+        </div>
+        <div class="info-row">
+          <span>Trans-Peninsular Span:</span>
+          <span>Pilar - Bagac Aerial Link</span>
+        </div>
+        <div class="info-row">
+          <span>Topology Vulnerability:</span>
+          <span style="color: var(--accent-crimson);">Bagac - Mariveles Spur Gap</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Embedded Data -->
+  <script src="bataan_fiber_data.js"></script>
+
+  <script>
+    // Initialize Leaflet Map centered on Bataan Peninsula
+    const map = L.map('map', {
+      center: [14.65, 120.45],
+      zoom: 11,
+      zoomControl: false,
+      attributionControl: false
+    });
+
+    // Custom Zoom Control top-right
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Basemaps
+    const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19
+    });
+
+    const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19
+    });
+
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    });
+
+    const baseMaps = {
+      "Carto Dark Matter (Telecom NOC)": cartoDark,
+      "Carto Voyager (Clean Street)": cartoVoyager,
+      "ESRI World Satellite": esriSat,
+      "OpenStreetMap Standard": osm
+    };
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+    // Feature Groups
+    const layers = {
+      underground: L.featureGroup().addTo(map),
+      aerial: L.featureGroup().addTo(map),
+      handholes: L.featureGroup().addTo(map),
+      unimplemented: L.featureGroup().addTo(map),
+      proposed: L.featureGroup().addTo(map),
+      nodes: L.featureGroup().addTo(map),
+      anchors: L.featureGroup().addTo(map)
+    };
+
+    // Render Lines
+    BATAAN_FIBER_DATA.lines.forEach(line => {
+      const latlngs = line.coordinates.map(pt => [pt[1], pt[0]]);
+      const cat = line.layer_cat;
+      const targetGroup = layers[cat] || layers.aerial;
+      
+      const poly = L.polyline(latlngs, {
+        color: line.style.color,
+        weight: line.style.weight,
+        dashArray: line.style.dashArray,
+        opacity: cat === 'underground' ? 0.95 : 0.85
+      });
+
+      poly.bindTooltip(`<b>${line.name}</b><br>${line.length_km} km`, {
+        className: 'custom-tooltip',
+        sticky: true
+      });
+
+      poly.on('click', () => {
+        showLineDetails(line);
+      });
+
+      targetGroup.addLayer(poly);
+    });
+
+    // Render Proposed Resiliency Ring Closure (Bagac to Mariveles)
+    const proposed = BATAAN_FIBER_DATA.proposed_loop;
+    const proposedLatLngs = proposed.coordinates.map(pt => [pt[1], pt[0]]);
+    const proposedPoly = L.polyline(proposedLatLngs, {
+      color: '#f43f5e',
+      weight: 5,
+      dashArray: '10, 8',
+      opacity: 0.95
+    });
+    proposedPoly.bindTooltip(`<b>${proposed.name}</b><br>${proposed.length_km} km (Proposed Ring Closure)`, {
+      className: 'custom-tooltip',
+      sticky: true
+    });
+    proposedPoly.on('click', () => {
+      showProposedDetails(proposed);
+    });
+    layers.proposed.addLayer(proposedPoly);
+
+    // Custom Icons
+    function createNodeIcon(type, color) {
+      return L.divIcon({
+        className: 'custom-node-icon',
+        html: `<div style="
+          width: 14px;
+          height: 14px;
+          background: ${color};
+          border: 2px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 0 10px ${color};
+        "></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+      });
+    }
+
+    function createAnchorIcon(category) {
+      let iconSymbol = '⚡';
+      let bgCol = '#10b981';
+      if (category.includes('Industrial') || category.includes('Freeport')) {
+        iconSymbol = '🏭';
+        bgCol = '#3b82f6';
+      } else if (category.includes('Energy')) {
+        iconSymbol = '⚡';
+        bgCol = '#f59e0b';
+      } else if (category.includes('Public Safety') || category.includes('Civic')) {
+        iconSymbol = '🏛️';
+        bgCol = '#8b5cf6';
+      } else if (category.includes('Maritime') || category.includes('Future')) {
+        iconSymbol = '🚢';
+        bgCol = '#ec4899';
+      }
+
+      return L.divIcon({
+        className: 'custom-anchor-icon',
+        html: `<div style="
+          width: 26px;
+          height: 26px;
+          background: rgba(15, 23, 42, 0.9);
+          border: 2px solid ${bgCol};
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          box-shadow: 0 0 12px ${bgCol};
+          cursor: pointer;
+        ">${iconSymbol}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+    }
+
+    // Render Telecom Nodes
+    BATAAN_FIBER_DATA.points.forEach(pt => {
+      const lat = pt.coordinates[1];
+      const lon = pt.coordinates[0];
+      const isBataan = pt.jurisdiction === 'Bataan';
+      const nodeCol = isBataan ? '#8b5cf6' : '#64748b';
+      
+      const marker = L.marker([lat, lon], {
+        icon: createNodeIcon(pt.type, nodeCol)
+      });
+
+      marker.bindTooltip(`<b>${pt.name}</b><br>${pt.type} (${pt.jurisdiction})`, {
+        className: 'custom-tooltip'
+      });
+
+      marker.on('click', () => {
+        showNodeDetails(pt);
+      });
+
+      layers.nodes.addLayer(marker);
+    });
+
+    // Render Growth Anchors
+    BATAAN_FIBER_DATA.anchors.forEach(anc => {
+      const marker = L.marker([anc.lat, anc.lon], {
+        icon: createAnchorIcon(anc.category)
+      });
+
+      marker.bindTooltip(`<b>${anc.name}</b><br>${anc.category} (${anc.town})`, {
+        className: 'custom-tooltip'
+      });
+
+      marker.on('click', () => {
+        showAnchorDetails(anc);
+      });
+
+      layers.anchors.addLayer(marker);
+    });
+
+    // Populate Municipalities Buttons
+    const muniGrid = document.getElementById('muni-buttons');
+    BATAAN_FIBER_DATA.municipalities.forEach(muni => {
+      const btn = document.createElement('button');
+      btn.className = 'muni-btn';
+      btn.innerText = muni.name;
+      btn.onclick = () => {
+        map.flyTo([muni.lat, muni.lon], 13.5, { duration: 1.2 });
+        showMuniDetails(muni);
+      };
+      muniGrid.appendChild(btn);
+    });
+
+    // UI Toggle Handlers
+    function toggleLayer(layerKey) {
+      const toggleEl = document.getElementById(`toggle-${layerKey}`);
+      const layerGroup = layers[layerKey];
+      if (map.hasLayer(layerGroup)) {
+        map.removeLayer(layerGroup);
+        toggleEl.classList.remove('active');
+      } else {
+        map.addLayer(layerGroup);
+        toggleEl.classList.add('active');
+      }
+    }
+
+    // Details Drawer Display Functions
+    function showLineDetails(line) {
+      document.getElementById('card-tag').innerText = line.corridor;
+      document.getElementById('card-tag').style.background = line.style.color + '22';
+      document.getElementById('card-tag').style.color = line.style.color;
+      document.getElementById('card-title').innerText = line.name;
+
+      let typeDesc = "Underground Concrete Encased Microduct Bundle (4-Way 14/10mm)";
+      if (line.layer_cat === 'aerial') {
+        typeDesc = "Heavy Duty Aerial Figure-8 Self-Supporting Optical Cable";
+      } else if (line.layer_cat === 'handholes') {
+        typeDesc = "Pre-cast Composite Handholes every 300m-500m with Dual Conduits";
+      }
+
+      document.getElementById('card-body').innerHTML = `
+        <div class="info-row">
+          <span>Corridor Group:</span>
+          <span>${line.corridor}</span>
+        </div>
+        <div class="info-row">
+          <span>Segment Length:</span>
+          <span>${line.length_km} km</span>
+        </div>
+        <div class="info-row">
+          <span>Infrastructure Type:</span>
+          <span>${line.layer_cat.toUpperCase()}</span>
+        </div>
+        <div class="info-row">
+          <span>Technical Spec:</span>
+          <span style="font-size: 11px;">${typeDesc}</span>
+        </div>
+        <div class="info-row">
+          <span>Source Folder:</span>
+          <span style="font-size: 10px; max-width: 230px; text-align: right; overflow:hidden; text-overflow:ellipsis;">${line.folder.split(' > ').slice(-2).join(' > ')}</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
+          <strong>BatFIRST Concession Note:</strong> Civil works co-located with road alignments (DPWH/LGU) reduce trenching costs by over 70%. Open-access microduct reservation guarantees shared tenancy for PLDT, Globe, DITO, and local micro-ISPs.
+        </div>
+      `;
+    }
+
+    function showProposedDetails(prop) {
+      document.getElementById('card-tag').innerText = "Resiliency Ring Mandate";
+      document.getElementById('card-tag').style.background = "rgba(244, 63, 94, 0.25)";
+      document.getElementById('card-tag').style.color = "#f43f5e";
+      document.getElementById('card-title').innerText = prop.name;
+
+      document.getElementById('card-body').innerHTML = `
+        <p style="margin-bottom: 10px; color: #fecdd3;">${prop.description}</p>
+        <div class="info-row">
+          <span>Alignment:</span>
+          <span>Gov. Joaquin Linao Road</span>
+        </div>
+        <div class="info-row">
+          <span>Required Civil Trenching:</span>
+          <span>36.8 km</span>
+        </div>
+        <div class="info-row">
+          <span>Topology Upgrade:</span>
+          <span>Open Spur ➔ Self-Healing Ring</span>
+        </div>
+        <div class="info-row">
+          <span>Sub-second Failover:</span>
+          <span>Automatic Rerouting via West Coast</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 11px; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 8px 10px; border-radius: 6px;">
+          <strong>Strategic Recommendation:</strong> Prioritize this segment under the DPWH/One Bataan Dig-Once road modernization to achieve closed-loop underground ring redundancy before typhoon season.
+        </div>
+      `;
+    }
+
+    function showNodeDetails(node) {
+      document.getElementById('card-tag').innerText = "Telecom Point of Presence";
+      document.getElementById('card-tag').style.background = "rgba(139, 92, 246, 0.25)";
+      document.getElementById('card-tag').style.color = "#c084fc";
+      document.getElementById('card-title').innerText = node.name;
+
+      document.getElementById('card-body').innerHTML = `
+        <div class="info-row">
+          <span>Shelter Class:</span>
+          <span>${node.type}</span>
+        </div>
+        <div class="info-row">
+          <span>Jurisdiction:</span>
+          <span>${node.jurisdiction}</span>
+        </div>
+        <div class="info-row">
+          <span>Coordinates:</span>
+          <span>${node.coordinates[1].toFixed(4)}°N, ${node.coordinates[0].toFixed(4)}°E</span>
+        </div>
+        <div class="info-row">
+          <span>Power Resilience:</span>
+          <span>Direct 48V DC Solar-Battery Bus (Target)</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px;">
+          <strong>Node Functions:</strong> Acts as an open-access Carrier Neutral Aggregation Hub (CNAH) where local micro-ISPs connect into the high-speed middle-mile transport grid via FRAND wheeling tariffs.
+        </div>
+      `;
+    }
+
+    function showAnchorDetails(anc) {
+      document.getElementById('card-tag').innerText = anc.category;
+      document.getElementById('card-tag').style.background = "rgba(16, 185, 129, 0.25)";
+      document.getElementById('card-tag').style.color = "#34d399";
+      document.getElementById('card-title').innerText = anc.name;
+
+      document.getElementById('card-body').innerHTML = `
+        <p style="margin-bottom: 10px; color: #e2e8f0;">${anc.description}</p>
+        <div class="info-row">
+          <span>Municipality:</span>
+          <span>${anc.town}</span>
+        </div>
+        <div class="info-row">
+          <span>Strategic Role:</span>
+          <span>Anchor Off-Take & High-Bandwidth Node</span>
+        </div>
+        <div class="info-row">
+          <span>Economic Sector:</span>
+          <span>${anc.category}</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 11px; color: #bae6fd; background: rgba(56, 189, 248, 0.15); padding: 8px 10px; border-radius: 6px;">
+          <strong>Off-Take Anchor:</strong> High industrial concentration de-risks private concessionaire capital by guaranteeing 5-10 year dark fiber IRU and capacity leasing revenue.
+        </div>
+      `;
+    }
+
+    function showMuniDetails(muni) {
+      document.getElementById('card-tag').innerText = "Municipality View";
+      document.getElementById('card-tag').style.background = "rgba(59, 130, 246, 0.25)";
+      document.getElementById('card-tag').style.color = "#60a5fa";
+      document.getElementById('card-title').innerText = muni.name;
+
+      document.getElementById('card-body').innerHTML = `
+        <div class="info-row">
+          <span>Strategic Focus:</span>
+          <span style="font-size: 11px; max-width: 240px; text-align: right;">${muni.role}</span>
+        </div>
+        <div class="info-row">
+          <span>Coordinates:</span>
+          <span>${muni.lat.toFixed(4)}°N, ${muni.lon.toFixed(4)}°E</span>
+        </div>
+        <div class="info-row">
+          <span>Local Deployment:</span>
+          <span>Curbside micro-trenching & Dig-Once ducts</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 11px; color: var(--text-muted);">
+          Use the layer toggles on the left to inspect underground trunks, aerial distribution spans, and nearby Points of Presence within ${muni.name}.
+        </div>
+      `;
+    }
+
+    function resetCard() {
+      document.getElementById('card-tag').innerText = "Strategic Overview";
+      document.getElementById('card-tag').style.background = "rgba(255, 120, 73, 0.2)";
+      document.getElementById('card-tag').style.color = "var(--accent-orange)";
+      document.getElementById('card-title').innerText = "Bataan Provincial Backbone Infrastructure";
+      document.getElementById('card-body').innerHTML = `
+        <p style="margin-bottom: 10px;">
+          Click on any fiber route, node marker, or economic anchor on the map to inspect its technical specifications, physical alignment, and connectivity mandate.
+        </p>
+        <div class="info-row">
+          <span>Primary North-South Trunk:</span>
+          <span>Roman Superhighway (Dual UG)</span>
+        </div>
+        <div class="info-row">
+          <span>East-West Penetration:</span>
+          <span>JASA / Olongapo-Gapan Road</span>
+        </div>
+        <div class="info-row">
+          <span>Trans-Peninsular Span:</span>
+          <span>Pilar - Bagac Aerial Link</span>
+        </div>
+        <div class="info-row">
+          <span>Topology Vulnerability:</span>
+          <span style="color: var(--accent-crimson);">Bagac - Mariveles Spur Gap</span>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

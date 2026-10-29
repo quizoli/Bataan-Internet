@@ -1,0 +1,18 @@
+# Large files exceeding GitHub limits (>50MB)
+Lipad v5.pdf
+*.pdf
+# Keep small summary documents if needed, but exclude large decks
+!10-02_Pulong_Master_Plan_ng_Fiber_Connectivity_sa_Bataan_PPP_Modelo_Teknikal_na_Disenyo_Seguridad_at_Stakeholder_Koordinasyon-Summary.pdf
+!batFIRST.pdf
+
+# OS & Temp files
+.DS_Store
+Thumbs.db
+*.tmp
+*~
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
