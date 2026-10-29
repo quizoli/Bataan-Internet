@@ -419,7 +419,7 @@ def build_portal():
     #map {
       width: 100%;
       height: 100%;
-      background: #070b14;
+      background: #0b1120;
     }
 
     /* Floating Action Buttons on Mobile */
@@ -1272,7 +1272,7 @@ def build_portal():
           </div>
 
           <div class="panel-body">
-            <!-- Basemap Switcher -->
+            <!-- Basemap Selector -->
             <div>
               <div class="section-label">Basemap Style</div>
               <div class="basemap-selector">
@@ -1794,10 +1794,15 @@ def build_portal():
 
   <script>
     // ==========================================
-    // PASSWORD PROTECTION & CRYPTO AUTH
+    // TOP LEVEL VARIABLES
     // ==========================================
+    let map = null;
+    let basemapLayers = {};
+    const layers = {};
+
     const AUTH_HASH = "60d3fc17aba7ef2bfa3a781ec0a0fbb17b9d80c5325ef53c7bafc5833ccca8e1";
     const AUTH_STORAGE_KEY = "bataan_portal_auth_token";
+    const isMobile = () => window.innerWidth <= 868;
 
     async function hashString(str) {
       const msgBuffer = new TextEncoder().encode(str);
@@ -1806,18 +1811,18 @@ def build_portal():
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    function unlockPortalUI() {
+      const overlay = document.getElementById('auth-overlay');
+      if (overlay) overlay.classList.add('unlocked');
+      if (map) {
+        setTimeout(() => map.invalidateSize(), 200);
+      }
+    }
+
     function checkExistingAuth() {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
       if (stored === AUTH_HASH) {
         unlockPortalUI();
-      }
-    }
-
-    function unlockPortalUI() {
-      const overlay = document.getElementById('auth-overlay');
-      overlay.classList.add('unlocked');
-      if (map) {
-        setTimeout(() => map.invalidateSize(), 200);
       }
     }
 
@@ -1851,25 +1856,26 @@ def build_portal():
       localStorage.removeItem(AUTH_STORAGE_KEY);
       sessionStorage.removeItem(AUTH_STORAGE_KEY);
       const overlay = document.getElementById('auth-overlay');
-      overlay.classList.remove('unlocked');
+      if (overlay) overlay.classList.remove('unlocked');
       const input = document.getElementById('auth-password-input');
-      input.value = '';
-      document.getElementById('auth-error-msg').classList.remove('visible');
-      input.focus();
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      const err = document.getElementById('auth-error-msg');
+      if (err) err.classList.remove('visible');
     }
 
     function togglePasswordVisibility() {
       const input = document.getElementById('auth-password-input');
-      input.type = input.type === 'password' ? 'text' : 'password';
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
     }
-
-    checkExistingAuth();
 
     // ==========================================
     // MOBILE & DESKTOP DRAWER CONTROLS
     // ==========================================
-    const isMobile = () => window.innerWidth <= 868;
-
     function openMobileLayers() {
       document.getElementById('mobile-backdrop').classList.add('active');
       document.getElementById('map-panel-box').classList.add('open-mobile');
@@ -1883,9 +1889,12 @@ def build_portal():
     }
 
     function closeAllDrawers() {
-      document.getElementById('mobile-backdrop').classList.remove('active');
-      document.getElementById('map-panel-box').classList.remove('open-mobile');
-      document.getElementById('detail-drawer').classList.remove('open-mobile');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (backdrop) backdrop.classList.remove('active');
+      const panel = document.getElementById('map-panel-box');
+      if (panel) panel.classList.remove('open-mobile');
+      const drawer = document.getElementById('detail-drawer');
+      if (drawer) drawer.classList.remove('open-mobile');
     }
 
     function toggleMapPanel(show) {
@@ -1927,8 +1936,10 @@ def build_portal():
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
       
-      document.getElementById(tabId).classList.add('active');
-      const activeBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick').includes(tabId));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+
+      const activeBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
       if (activeBtn) activeBtn.classList.add('active');
 
       if (tabId === 'map-tab' && map) {
@@ -1937,9 +1948,9 @@ def build_portal():
     }
 
     // ==========================================
-    // MAP INITIALIZATION
+    // MAP INITIALIZATION (Executed First)
     // ==========================================
-    const map = L.map('map', {
+    map = L.map('map', {
       center: [14.65, 120.45],
       zoom: isMobile() ? 10 : 11,
       zoomControl: false,
@@ -1979,7 +1990,7 @@ def build_portal():
     // Default basemap
     esriStreet.addTo(map);
 
-    const basemapLayers = {
+    basemapLayers = {
       street: esriStreet,
       satellite: esriSat,
       dark: esriDarkGroup,
@@ -2001,62 +2012,64 @@ def build_portal():
     }
 
     // Feature Layers
-    const layers = {
-      underground: L.featureGroup().addTo(map),
-      aerial: L.featureGroup().addTo(map),
-      handholes: L.featureGroup().addTo(map),
-      unimplemented: L.featureGroup().addTo(map),
-      proposed: L.featureGroup().addTo(map),
-      nodes: L.featureGroup().addTo(map),
-      anchors: L.featureGroup().addTo(map)
-    };
+    layers.underground = L.featureGroup().addTo(map);
+    layers.aerial = L.featureGroup().addTo(map);
+    layers.handholes = L.featureGroup().addTo(map);
+    layers.unimplemented = L.featureGroup().addTo(map);
+    layers.proposed = L.featureGroup().addTo(map);
+    layers.nodes = L.featureGroup().addTo(map);
+    layers.anchors = L.featureGroup().addTo(map);
 
     // Render Lines
-    BATAAN_FIBER_DATA.lines.forEach(line => {
-      const latlngs = line.coordinates.map(pt => [pt[1], pt[0]]);
-      const cat = line.layer_cat;
-      const targetGroup = layers[cat] || layers.aerial;
-      
-      const poly = L.polyline(latlngs, {
-        color: line.style.color,
-        weight: line.style.weight,
-        dashArray: line.style.dashArray,
-        opacity: cat === 'underground' ? 0.95 : 0.85
-      });
+    if (typeof BATAAN_FIBER_DATA !== 'undefined' && BATAAN_FIBER_DATA.lines) {
+      BATAAN_FIBER_DATA.lines.forEach(line => {
+        const latlngs = line.coordinates.map(pt => [pt[1], pt[0]]);
+        const cat = line.layer_cat;
+        const targetGroup = layers[cat] || layers.aerial;
+        
+        const poly = L.polyline(latlngs, {
+          color: line.style.color,
+          weight: line.style.weight,
+          dashArray: line.style.dashArray,
+          opacity: cat === 'underground' ? 0.95 : 0.85
+        });
 
-      poly.bindTooltip(`<b>${line.name}</b><br>${line.length_km} km`, {
+        poly.bindTooltip(`<b>${line.name}</b><br>${line.length_km} km`, {
+          className: 'custom-tooltip',
+          sticky: true
+        });
+
+        poly.on('click', () => {
+          showLineDetails(line);
+          if (isMobile()) openMobileInspector();
+          else toggleInspector(true);
+        });
+
+        targetGroup.addLayer(poly);
+      });
+    }
+
+    // Render Proposed Ring Closure (Bagac to Mariveles)
+    if (typeof BATAAN_FIBER_DATA !== 'undefined' && BATAAN_FIBER_DATA.proposed_loop) {
+      const proposed = BATAAN_FIBER_DATA.proposed_loop;
+      const proposedLatLngs = proposed.coordinates.map(pt => [pt[1], pt[0]]);
+      const proposedPoly = L.polyline(proposedLatLngs, {
+        color: '#f43f5e',
+        weight: 5,
+        dashArray: '10, 8',
+        opacity: 0.95
+      });
+      proposedPoly.bindTooltip(`<b>${proposed.name}</b><br>${proposed.length_km} km (Proposed Ring Closure)`, {
         className: 'custom-tooltip',
         sticky: true
       });
-
-      poly.on('click', () => {
-        showLineDetails(line);
+      proposedPoly.on('click', () => {
+        showProposedDetails(proposed);
         if (isMobile()) openMobileInspector();
         else toggleInspector(true);
       });
-
-      targetGroup.addLayer(poly);
-    });
-
-    // Render Proposed Ring Closure (Bagac to Mariveles)
-    const proposed = BATAAN_FIBER_DATA.proposed_loop;
-    const proposedLatLngs = proposed.coordinates.map(pt => [pt[1], pt[0]]);
-    const proposedPoly = L.polyline(proposedLatLngs, {
-      color: '#f43f5e',
-      weight: 5,
-      dashArray: '10, 8',
-      opacity: 0.95
-    });
-    proposedPoly.bindTooltip(`<b>${proposed.name}</b><br>${proposed.length_km} km (Proposed Ring Closure)`, {
-      className: 'custom-tooltip',
-      sticky: true
-    });
-    proposedPoly.on('click', () => {
-      showProposedDetails(proposed);
-      if (isMobile()) openMobileInspector();
-      else toggleInspector(true);
-    });
-    layers.proposed.addLayer(proposedPoly);
+      layers.proposed.addLayer(proposedPoly);
+    }
 
     // Node & Anchor Icons
     function createNodeIcon(type, color) {
@@ -2090,69 +2103,82 @@ def build_portal():
     }
 
     // Render Telecom Nodes
-    BATAAN_FIBER_DATA.points.forEach(pt => {
-      const lat = pt.coordinates[1];
-      const lon = pt.coordinates[0];
-      const isBataan = pt.jurisdiction === 'Bataan';
-      const nodeCol = isBataan ? '#8b5cf6' : '#64748b';
-      
-      const marker = L.marker([lat, lon], { icon: createNodeIcon(pt.type, nodeCol) });
-      marker.bindTooltip(`<b>${pt.name}</b><br>${pt.type} (${pt.jurisdiction})`, { className: 'custom-tooltip' });
-      marker.on('click', () => {
-        showNodeDetails(pt);
-        if (isMobile()) openMobileInspector();
-        else toggleInspector(true);
+    if (typeof BATAAN_FIBER_DATA !== 'undefined' && BATAAN_FIBER_DATA.points) {
+      BATAAN_FIBER_DATA.points.forEach(pt => {
+        const lat = pt.coordinates[1];
+        const lon = pt.coordinates[0];
+        const isBataan = pt.jurisdiction === 'Bataan';
+        const nodeCol = isBataan ? '#8b5cf6' : '#64748b';
+        
+        const marker = L.marker([lat, lon], { icon: createNodeIcon(pt.type, nodeCol) });
+        marker.bindTooltip(`<b>${pt.name}</b><br>${pt.type} (${pt.jurisdiction})`, { className: 'custom-tooltip' });
+        marker.on('click', () => {
+          showNodeDetails(pt);
+          if (isMobile()) openMobileInspector();
+          else toggleInspector(true);
+        });
+        layers.nodes.addLayer(marker);
       });
-      layers.nodes.addLayer(marker);
-    });
+    }
 
     // Render Growth Anchors
-    BATAAN_FIBER_DATA.anchors.forEach(anc => {
-      const marker = L.marker([anc.lat, anc.lon], { icon: createAnchorIcon(anc.category) });
-      marker.bindTooltip(`<b>${anc.name}</b><br>${anc.category} (${anc.town})`, { className: 'custom-tooltip' });
-      marker.on('click', () => {
-        showAnchorDetails(anc);
-        if (isMobile()) openMobileInspector();
-        else toggleInspector(true);
+    if (typeof BATAAN_FIBER_DATA !== 'undefined' && BATAAN_FIBER_DATA.anchors) {
+      BATAAN_FIBER_DATA.anchors.forEach(anc => {
+        const marker = L.marker([anc.lat, anc.lon], { icon: createAnchorIcon(anc.category) });
+        marker.bindTooltip(`<b>${anc.name}</b><br>${anc.category} (${anc.town})`, { className: 'custom-tooltip' });
+        marker.on('click', () => {
+          showAnchorDetails(anc);
+          if (isMobile()) openMobileInspector();
+          else toggleInspector(true);
+        });
+        layers.anchors.addLayer(marker);
       });
-      layers.anchors.addLayer(marker);
-    });
+    }
 
     // Populate Municipalities Quick Jump
     const muniGrid = document.getElementById('muni-grid-container');
-    BATAAN_FIBER_DATA.municipalities.forEach(muni => {
-      const btn = document.createElement('button');
-      btn.className = 'muni-pill';
-      btn.innerText = muni.name;
-      btn.onclick = () => {
-        map.flyTo([muni.lat, muni.lon], 13.5, { duration: 1.2 });
-        showMuniDetails(muni);
-        if (isMobile()) {
-          closeAllDrawers();
-        }
-      };
-      muniGrid.appendChild(btn);
-    });
+    if (muniGrid && typeof BATAAN_FIBER_DATA !== 'undefined' && BATAAN_FIBER_DATA.municipalities) {
+      BATAAN_FIBER_DATA.municipalities.forEach(muni => {
+        const btn = document.createElement('button');
+        btn.className = 'muni-pill';
+        btn.innerText = muni.name;
+        btn.onclick = () => {
+          map.flyTo([muni.lat, muni.lon], 13.5, { duration: 1.2 });
+          showMuniDetails(muni);
+          if (isMobile()) {
+            closeAllDrawers();
+          }
+        };
+        muniGrid.appendChild(btn);
+      });
+    }
 
     // Toggle Layer Handler
     function toggleLayer(layerKey) {
       const toggleEl = document.getElementById(`toggle-${layerKey}`);
       const layerGroup = layers[layerKey];
-      if (map.hasLayer(layerGroup)) {
-        map.removeLayer(layerGroup);
-        toggleEl.classList.remove('active');
-      } else {
-        map.addLayer(layerGroup);
-        toggleEl.classList.add('active');
+      if (layerGroup) {
+        if (map.hasLayer(layerGroup)) {
+          map.removeLayer(layerGroup);
+          if (toggleEl) toggleEl.classList.remove('active');
+        } else {
+          map.addLayer(layerGroup);
+          if (toggleEl) toggleEl.classList.add('active');
+        }
       }
     }
 
     // Drawer Details
     function showLineDetails(line) {
-      document.getElementById('drawer-tag').innerText = line.corridor;
-      document.getElementById('drawer-tag').style.background = line.style.color + '22';
-      document.getElementById('drawer-tag').style.color = line.style.color;
-      document.getElementById('drawer-title').innerText = line.name;
+      const tag = document.getElementById('drawer-tag');
+      const title = document.getElementById('drawer-title');
+      const body = document.getElementById('drawer-body');
+      if (!tag || !title || !body) return;
+
+      tag.innerText = line.corridor;
+      tag.style.background = line.style.color + '22';
+      tag.style.color = line.style.color;
+      title.innerText = line.name;
 
       let typeDesc = "Underground Concrete Encased Microduct Bundle (4-Way 14/10mm)";
       if (line.layer_cat === 'aerial') {
@@ -2161,7 +2187,7 @@ def build_portal():
         typeDesc = "Pre-cast Composite Handholes every 300m-500m with Dual Conduits";
       }
 
-      document.getElementById('drawer-body').innerHTML = `
+      body.innerHTML = `
         <div class="meta-row">
           <span>Corridor Group:</span>
           <span>${line.corridor}</span>
@@ -2189,12 +2215,17 @@ def build_portal():
     }
 
     function showProposedDetails(prop) {
-      document.getElementById('drawer-tag').innerText = "Resiliency Ring Mandate";
-      document.getElementById('drawer-tag').style.background = "rgba(244, 63, 94, 0.25)";
-      document.getElementById('drawer-tag').style.color = "#f43f5e";
-      document.getElementById('drawer-title').innerText = prop.name;
+      const tag = document.getElementById('drawer-tag');
+      const title = document.getElementById('drawer-title');
+      const body = document.getElementById('drawer-body');
+      if (!tag || !title || !body) return;
 
-      document.getElementById('drawer-body').innerHTML = `
+      tag.innerText = "Resiliency Ring Mandate";
+      tag.style.background = "rgba(244, 63, 94, 0.25)";
+      tag.style.color = "#f43f5e";
+      title.innerText = prop.name;
+
+      body.innerHTML = `
         <p style="margin-bottom: 8px; color: #fecdd3;">${prop.description}</p>
         <div class="meta-row">
           <span>Alignment:</span>
@@ -2219,12 +2250,17 @@ def build_portal():
     }
 
     function showNodeDetails(node) {
-      document.getElementById('drawer-tag').innerText = "Telecom Point of Presence";
-      document.getElementById('drawer-tag').style.background = "rgba(139, 92, 246, 0.25)";
-      document.getElementById('drawer-tag').style.color = "#c084fc";
-      document.getElementById('drawer-title').innerText = node.name;
+      const tag = document.getElementById('drawer-tag');
+      const title = document.getElementById('drawer-title');
+      const body = document.getElementById('drawer-body');
+      if (!tag || !title || !body) return;
 
-      document.getElementById('drawer-body').innerHTML = `
+      tag.innerText = "Telecom Point of Presence";
+      tag.style.background = "rgba(139, 92, 246, 0.25)";
+      tag.style.color = "#c084fc";
+      title.innerText = node.name;
+
+      body.innerHTML = `
         <div class="meta-row">
           <span>Shelter Class:</span>
           <span>${node.type}</span>
@@ -2248,12 +2284,17 @@ def build_portal():
     }
 
     function showAnchorDetails(anc) {
-      document.getElementById('drawer-tag').innerText = anc.category;
-      document.getElementById('drawer-tag').style.background = "rgba(16, 185, 129, 0.25)";
-      document.getElementById('drawer-tag').style.color = "#34d399";
-      document.getElementById('drawer-title').innerText = anc.name;
+      const tag = document.getElementById('drawer-tag');
+      const title = document.getElementById('drawer-title');
+      const body = document.getElementById('drawer-body');
+      if (!tag || !title || !body) return;
 
-      document.getElementById('drawer-body').innerHTML = `
+      tag.innerText = anc.category;
+      tag.style.background = "rgba(16, 185, 129, 0.25)";
+      tag.style.color = "#34d399";
+      title.innerText = anc.name;
+
+      body.innerHTML = `
         <p style="margin-bottom: 8px; color: #e2e8f0;">${anc.description}</p>
         <div class="meta-row">
           <span>Municipality:</span>
@@ -2274,12 +2315,17 @@ def build_portal():
     }
 
     function showMuniDetails(muni) {
-      document.getElementById('drawer-tag').innerText = "Municipality View";
-      document.getElementById('drawer-tag').style.background = "rgba(59, 130, 246, 0.25)";
-      document.getElementById('drawer-tag').style.color = "#60a5fa";
-      document.getElementById('drawer-title').innerText = muni.name;
+      const tag = document.getElementById('drawer-tag');
+      const title = document.getElementById('drawer-title');
+      const body = document.getElementById('drawer-body');
+      if (!tag || !title || !body) return;
 
-      document.getElementById('drawer-body').innerHTML = `
+      tag.innerText = "Municipality View";
+      tag.style.background = "rgba(59, 130, 246, 0.25)";
+      tag.style.color = "#60a5fa";
+      title.innerText = muni.name;
+
+      body.innerHTML = `
         <div class="meta-row">
           <span>Strategic Focus:</span>
           <span style="font-size: 11px; max-width: 220px; text-align: right;">${muni.role}</span>
@@ -2298,12 +2344,16 @@ def build_portal():
       `;
     }
 
-    // Dismiss drawer when clicking outside on desktop
     map.on('click', () => {
       if (isMobile()) {
         closeAllDrawers();
       }
     });
+
+    // ==========================================
+    // Check Auth after everything is initialized
+    // ==========================================
+    checkExistingAuth();
   </script>
 </body>
 </html>
@@ -2311,7 +2361,7 @@ def build_portal():
 
     with open("index.html", "w") as f:
         f.write(html)
-    print("Saved mobile-friendly index.html successfully!")
+    print("Saved index.html successfully!")
 
 if __name__ == "__main__":
     build_portal()
