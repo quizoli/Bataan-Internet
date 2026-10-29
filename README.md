@@ -6,7 +6,8 @@
 
 Interactive provincial GIS portal and digital infrastructure blueprint for **Bataan Province**, operationalizing the **BatFIRST** (*Fiber Infra Resiliency & Sustainable Transformation*) initiative and integrating national/regional fiber backbone networks under the **RA 12234 (Konektadong Pinoy Act)** DTIP framework.
 
-🌐 **Live Portal**: [https://quizoli.github.io/Bataan-Internet/](https://quizoli.github.io/Bataan-Internet/)
+🌐 **Live Portal**: [https://quizoli.github.io/Bataan-Internet/](https://quizoli.github.io/Bataan-Internet/)  
+📖 **Comprehensive Interpretation & User Guide**: [PORTAL_USER_GUIDE.md](PORTAL_USER_GUIDE.md)
 
 ---
 
